@@ -36,7 +36,7 @@ end
 
 function Square:update()
   self.frame += 1
-  if (self.frame == self.updateFrames) then
+  if (self.frame >= self.updateFrames) then
     self.hightlightPos += 1
     if (self.hightlightPos == 5) then
       self.hightlightPos = 1
