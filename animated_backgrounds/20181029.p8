@@ -55,6 +55,7 @@ function Gridlet:applyRotation()
     pPrime = Pixel:new()
     pPrime.x = p.x * cos(self.angle) - p.y * sin(self.angle)
     pPrime.y = p.x * sin(self.angle) - p.y * cos(self.angle)
+    pPrime.v = p.v
     add(self.rotatedPixelData, pPrime)
   end
 end
@@ -73,7 +74,7 @@ function _init()
     local g = Gridlet:new()
     g.x = 64
     g.y = 64
-    g.size = 10
+    g.size = 30
     g.color = 10
     g:init()
     add(gridlets, g)
