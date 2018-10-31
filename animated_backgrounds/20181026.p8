@@ -1,6 +1,9 @@
 pico-8 cartridge // http://www.pico-8.com
 version 16
 __lua__
+
+-- written by Adam Richardson
+
 Square = {
   x = 0,
   y = 0,
