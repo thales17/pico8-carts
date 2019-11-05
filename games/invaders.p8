@@ -1,61 +1,82 @@
 pico-8 cartridge // http://www.pico-8.com
 version 18
 __lua__
-
+-- invaders
 -- written by Adam Richardson
 
+function collide(r1, r2)
+	return r1.x < (r2.x+r2.w) and
+	  (r1.x+r1.w) > r2.x and
+	  r1.y < (r2.y+r2.h) and
+	  (r1.y+r2.h) > r2.y
+end
+
 function _init()
-  t,f,s=0,1,20 --tick,frame,step
-  sp={2,3} --sprites
-  x=18
-  pb={x=21,y=116,r=0,h=3,w=1,s=3}
+	t,f,s=0,1,20 --tick,frame,step
+	sp={2,3} --sprites
+	x=18
+	pb={x=21,y=116,r=true,h=3,w=1,s=3}
+	es={}
+	for j=1,5 do
+		for i=1,8 do
+			e={x=18+(i-1)*12,y=(j-1)*12+18,w=8,h=8,d=false}
+			add(es,e)
+		end
+	end  
 end
 
 function _update60()
-  t=(t+1)%s
-  if (t==0) then
-    f=f%#sp+1
-  end
-  if (btn(0)) then
-    x-=1
-    x=max(x,0)
-  end
+	t=(t+1)%s
+	if (t==0) then
+		f=f%#sp+1
+	end
+	if (btn(0)) then
+		x-=1
+		x=max(x,0)
+	end
 		
-  if (btn(1)) then
-    x+=1
-    x=min(x,120)
-  end
+	if (btn(1)) then
+		x+=1
+		x=min(x,120)
+	end
 
-  if (btn(4)) then
-    if(pb.r==0) then
-      sfx(0)
-      pb.r=1
-      pb.x = x+3
-      pb.y = 116
-    end
-  end
-
-  if (pb.r!=0) then
-    pb.y-=pb.s
-    if(pb.y<(-1*pb.h)) then
-      pb.r=0
-    end
-  end
-  
+	if (btn(4)) then
+		if(pb.r) then
+			sfx(0)
+			pb.r=false
+			pb.x=x+3
+			pb.y=116
+		end
+	end
+	
+	if (not pb.r) then
+		pb.y-=pb.s
+		if(pb.y<(-1*pb.h)) then
+			pb.r=true
+		end
+		
+		for e in all(es) do
+			if(not e.d and collide(e,pb)) then
+				pb.r=true
+				e.d=true
+			end
+		end
+	end
+ 
 end
 
 function _draw()
-  cls(2)
-  for j=1,5 do
-    for i=1,8 do
-      spr(sp[f],18+(i-1)*12,(j-1)*12+18)
-    end
-  end
-
-  spr(4,x,118)
-  if(pb.r!=0) then
-    rectfill(pb.x,pb.y,pb.x+pb.w,pb.y+pb.h,7)
-  end
+	cls(2)
+	for i=1,40 do
+		if(not es[i].d) then
+			spr(sp[f],es[i].x,es[i].y)
+		end
+	end
+	
+	spr(4,x,118)
+	if(not pb.r) then
+		rectfill(pb.x,pb.y,pb.x+pb.w,pb.y+pb.h,7)
+	end
 end
 
 __gfx__
