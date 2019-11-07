@@ -12,7 +12,7 @@ function collide(r1, r2)
 end
 
 function _init()
-	t,s=0,20 --tick,frame,step
+	t,s=0,20
 	x=18
 	pb={x=21,y=116,r=true,h=3,w=1,s=3}
 	es={}
@@ -22,6 +22,54 @@ function _init()
 			add(es,e)
 		end
 	end  
+end
+
+function lefte()
+	local l={x=128,y=128}
+	for i=1,8 do
+		local idx=(i-1)*8+1
+		if(es[idx].st==0) then
+			for j=1,8 do
+				local e=es[idx+j]
+				if(e.st==0 and l.x>e.x) then
+					l.x=e.x
+					l.y=e.y
+					break
+				end
+			end
+		elseif(l.x>es[idx].x) then
+				l.x=es[idx].x
+				l.y=es[idx].y
+		end
+	end
+	
+	return l
+end
+
+function righte()
+	local r={x=0,y=0}
+	for i=1,8 do
+		local idx=(i-1)*8+1
+		if(es[idx].st==0) then
+			for j=1,8 do
+				local e=es[idx+j]
+				if(e.st==0 and r.x<e.x) then
+					r.x=e.x
+					r.y=e.y
+					break
+				end
+			end	
+		elseif(r.x<es[idx].x) then
+			r.x=es[idx].x
+			r.y=es[idx].y
+		end
+	end
+	
+	return l
+end
+
+function bottome(c)
+	if(c<0 or c>8) return nil
 end
 
 function _update60()
