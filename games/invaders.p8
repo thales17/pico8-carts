@@ -16,20 +16,22 @@ function _init()
 	x=18
 	pb={x=21,y=116,r=true,h=3,w=1,s=3}
 	es={}
+	espeed=1
+	edir=1
 	for j=1,5 do
 		for i=1,8 do
 			e={x=18+(i-1)*12,y=(j-1)*12+18,w=8,h=8,st=0,f=1,sp={2,3},esp=18}
 			add(es,e)
 		end
-	end  
+	end
 end
 
 function lefte()
 	local l={x=128,y=128}
-	for i=1,8 do
+	for i=1,5 do
 		local idx=(i-1)*8+1
 		if(es[idx].st==0) then
-			for j=1,8 do
+			for j=1,7 do
 				local e=es[idx+j]
 				if(e.st==0 and l.x>e.x) then
 					l.x=e.x
@@ -48,7 +50,7 @@ end
 
 function righte()
 	local r={x=0,y=0}
-	for i=1,8 do
+	for i=1,5 do
 		local idx=(i-1)*8+1
 		if(es[idx].st==0) then
 			for j=1,8 do
@@ -65,14 +67,22 @@ function righte()
 		end
 	end
 	
-	return l
+	return r
 end
 
 function bottome(c)
 	if(c<0 or c>8) return nil
+	for i=32-c,0,-8 do
+		local e = es[i+1]
+		if(not e.d) then
+			return e
+		end  
+	end
+	return nil
 end
 
 function _update60()
+	-- game ticks
 	t=(t+1)%s
 	if(t==0) then
 		for e in all(es) do
@@ -84,6 +94,8 @@ function _update60()
 			end
 		end
 	end
+	
+	-- player input
 	if (btn(0)) then
 		x-=1
 		x=max(x,0)
@@ -103,7 +115,8 @@ function _update60()
 		end
 	end
 	
-	if (not pb.r) then
+	-- player bullet
+	if(not pb.r) then
 		pb.y-=pb.s
 		if(pb.y<(-1*pb.h)) then
 			pb.r=true
@@ -116,8 +129,34 @@ function _update60()
 				e.f=0
 				t=0
 				sfx(1)
+				break
 			end
 		end
+	end
+	
+	-- enemies
+	local ma=edir*espeed
+	local cedir=false
+	if(ma<0) then
+		local l=lefte()
+		if((l.x+ma)<=0) then
+			cedir=true
+		end
+	else
+		local r=righte()
+		if(r.x+8+ma>=128) then
+			cedir=true
+		end
+	end
+	
+	if(cedir) then
+		edir*=-1
+		ma*=-1
+		-- move down
+	end
+	
+	for e in all(es) do
+		e.x+=ma
 	end
  
 end
