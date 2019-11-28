@@ -16,7 +16,8 @@ function _init()
 	x=18
 	pb={x=21,y=116,r=true,h=3,w=1,s=3}
 	es={}
-	espeed=1
+	espeed=0.25
+	edead=0
 	edir=1
 	for j=1,5 do
 		for i=1,8 do
@@ -108,7 +109,11 @@ function _update60()
 				e.st=1
 				e.f=0
 				t=0
+				edead+=1
+				espeed=0.25*(1+flr(edead/10))
 				sfx(1)
+				
+				--check for gameover
 				break
 			end
 		end
