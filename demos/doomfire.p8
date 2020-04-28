@@ -11,6 +11,17 @@ function _init()
 		pset(x-0,126,7)
 		pset(x-0,125,7)
 	end
+	pixels = {}
+	for x=0,128 do
+		for y=0,128 do
+			local idx = y*128+x+1
+			pixels[idx]=0
+		end
+	end
+	for x=0,128 do
+		local idx = 127*128+x+1
+		pixels[idx]=7
+	end
 	colors = {
 		0,
 		5,
@@ -30,30 +41,32 @@ function _init()
 	}
 end
 
-function spread(x,y)
-	local p = pget(x,y)
+function spread(src)
+	local p = pixels[src]
 	if(p == 0) then
-		pset(x,y-1,0)
+		pixels[src-128]=0
 	else
-		local src = (y*128)+x
 		local r = band(rnd(3),3)
 		local dst = src - r + 1
-		local xx = dst % 128
-		local yy = dst / 128
-		local c = p-band(r,1)
-		pset(xx,yy-1,colors[c]) 
+		pixels[dst-128] = p-band(r,1) 
 	end
 end
 
-function _update60()
+function _update()
 	for x=0,128 do
 		for y=1,128 do
-			spread(x,y)
+			spread(y*128+x)
 		end
 	end
 end
 
 function _draw()
+	for x=0,128 do
+		for y=0,128 do
+			local idx = y*128+x+1
+			pset(x,y,colors[pixels[idx]])
+		end
+	end
 end
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
