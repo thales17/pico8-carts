@@ -5,68 +5,61 @@ __lua__
 -- written by Adam Richardson
 
 function _init()
-	cls()
-	for x=1,128 do
-		pset(x-0,127,7)
-		pset(x-0,126,7)
-		pset(x-0,125,7)
-	end
+	fw = 128
+	fh = 32
+	psize = 4
 	pixels = {}
-	for x=0,128 do
-		for y=0,128 do
-			local idx = y*128+x+1
-			pixels[idx]=0
+	for x=0,fw do
+		for y=0,fh do
+			pixels[idx_xy(x,y)]=0
 		end
 	end
-	for x=0,128 do
-		local idx = 127*128+x+1
-		pixels[idx]=7
+	
+	for x=0,fw-1 do
+		pixels[idx_xy(x,fh-1)]=psize-1
 	end
+	
 	colors = {
 		0,
-		5,
-		2,
-		13,
-		1,
-		10,
-		15,
-		4,
-		14,
-		9,
-		3,
-		11,
-		12,
 		8,
-		6,
+		9,
+		10,
 	}
+end
+
+function idx_xy(x,y)
+	return y*fw+x
 end
 
 function spread(src)
 	local p = pixels[src]
-	if(p == 0) then
-		pixels[src-128]=0
+	if(p==0) then
+		pixels[src-fw]=0
 	else
 		local r = band(rnd(3),3)
 		local dst = src - r + 1
-		pixels[dst-128] = p-band(r,1) 
+		pixels[dst-fw] = p-band(r,1) 
 	end
 end
 
 function _update()
-	for x=0,128 do
-		for y=1,128 do
-			spread(y*128+x)
+	for x=0,fw-1 do
+		for y=1,fh-1 do
+			spread(idx_xy(x,y))
 		end
 	end
 end
 
 function _draw()
-	for x=0,128 do
-		for y=0,128 do
-			local idx = y*128+x+1
-			pset(x,y,colors[pixels[idx]])
+	cls()
+	local offset=128-fh
+	for x=0,fw-1 do
+		for y=0,fh-1 do
+			pset(x,y+offset,colors[pixels[idx_xy(x,y)]])
 		end
 	end
+	
+	print("doom fire", 44, 40)
 end
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
