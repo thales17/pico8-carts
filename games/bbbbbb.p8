@@ -1,7 +1,7 @@
 pico-8 cartridge // http://www.pico-8.com
 version 22
 __lua__
--- bbbbbb
+-- BBBBBB
 -- written by Adam Richardson
 
 function _init()

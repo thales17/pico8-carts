@@ -2,7 +2,7 @@ pico-8 cartridge // http://www.pico-8.com
 version 22
 __lua__
 -- DOOMFIRE
--- written by Adam Richardson
+-- by Adam Richardson
 
 function _init()
 	fw = 128
