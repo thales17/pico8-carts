@@ -6,14 +6,11 @@ __lua__
 
 function _init()	
 	gaddr=0X4300
---	size=1
---	cols=128/size
---	gsize=(128*128)/8
-	gsize=0X800
+	size=4
+	cols=128/size
+	gsize=(cols*cols)/8
 	laddr=gaddr+gsize
 	rndg()
-	
-	cls()
 end
 
 function rndg()
@@ -23,10 +20,17 @@ function rndg()
 		poke(gaddr+idx,v)
 		poke(laddr+idx,v)
 	end
+	for x=0,cols-1 do
+		set_xy(x,0,0)
+		set_xy(x,cols-1,0)
+		set_xy(0,x,0)
+		set_xy(cols-1,x,0)
+	end
+	lt=t()
 end
 
 function state_xy(x,y)
-	local idx=(y*128+x)
+	local idx=(y*cols+x)
 	local i=idx/8
 	local o=(idx%8)
 	local m=shl(1,o)
@@ -36,7 +40,7 @@ function state_xy(x,y)
 end
 
 function set_xy(x,y,n)
-	local idx=(y*128+x)
+	local idx=(y*cols+x)
 	local i=idx/8
 	local o=(idx%8)
 	local m=shl(1,o)
@@ -87,14 +91,23 @@ function score(x,y)
 end
 
 function _update60()
-	for x=1,128-2 do
-		for y=1,128-2 do
+	if btn(1) then
+		rndg()
+		return
+	end
+	for x=1,cols-2 do
+		for y=1,cols-2 do
 			local s=score(x,y)
-			if s<2 or s>3 then
-				set_xy(x,y,0)
-			end
-			if s==3 then
-				set_xy(x,y,1)
+			local st=state_xy(x,y)
+			
+			if st then
+				if s<2 or s>3 then
+					set_xy(x,y,0)
+				end
+			else
+				if s==3 then
+					set_xy(x,y,1)
+				end
 			end
 		end
 	end
@@ -112,16 +125,15 @@ function _draw()
 		for o=0,7 do
 			local m=shl(1,o)
 			if band(m,v) > 0 then
---				rectfill(
---					x*size,
---					y*size,
---					x*size+size-1,
---					y*size+size-1,
---					11)
-				pset(x,y,11)
+				rectfill(
+					x*size,
+					y*size,
+					x*size+size-1,
+					y*size+size-1,
+					11)
 			end
 			x+=1
-			if(x==128) then
+			if(x==cols) then
 				x=0
 				y+=1
 			end
