@@ -5,7 +5,7 @@ __lua__
 -- BY ADAM RICHARDSON
 
 function _init()
-	size=1
+	size=4
 	cols =128/size
 	snake_v=1
 	pill_v=2
@@ -15,7 +15,7 @@ function _init()
 	dir_w=4
 	starting_len=3
 	grid={}
-	update_ticks=6
+	update_ticks=10
 	ticks=0
 	score=0
 	head=snake_cell()
@@ -49,6 +49,7 @@ function setup()
 	head.x=flr(rnd(cols/2))+starting_len
 	head.y=flr(rnd(cols/2))+starting_len
 	head.d=next_dir
+	head.n=nil
 	for i=1,starting_len do
 		grow_snake()
 	end
@@ -71,6 +72,7 @@ function grow_snake()
 	while cell.n do
 		cell=cell.n
 	end
+	
 	local grow=snake_cell()
 	grow.x=cell.x
 	grow.y=cell.y
@@ -80,8 +82,8 @@ function grow_snake()
 	local growpos={
 		{x=grow.x,y=grow.y+1},
 		{x=grow.x,y=grow.y-1},
-		{x=grow.x+1,y=grow.y},
-		{x=grow.x-1,y=grow.y}
+		{x=grow.x-1,y=grow.y},
+		{x=grow.x+1,y=grow.y}
 	}
 	local xy=growpos[grow.d]
 	grow.x=xy.x
@@ -108,25 +110,25 @@ end
 
 function handle_input(d)
 	local new_dir=d
-	if btnp(0) then
+	if btnp(⬅️) then
 		if d!=dir_e and d!=dir_w then
 			new_dir=dir_w
 		end
 	end
 	
-	if btnp(1) then
+	if btnp(➡️) then
 		if d!=dir_e and d!=dir_w then
 			new_dir=dir_e
 		end
 	end
 	
-	if btnp(2) then
+	if btnp(⬆️) then
 		if d!=dir_n and d!=dir_s then
 			new_dir=dir_n
 		end
 	end
 	
-	if btnp(3) then
+	if btnp(⬇️) then
 		if d!=dir_n and d!=dir_s then
 			new_dir=dir_s
 		end
@@ -144,9 +146,9 @@ function should_wait()
 	return false
 end
 
-function _update()
+function _update60()
 	if is_gameover then
-		if btn(5) then
+		if btn(❎) then
 			setup()
 		end
 		return
@@ -183,7 +185,7 @@ function _update()
 			return
 		end
 		
-		grid[idx_xy(cell.x,cell.y)] = snake_v
+		grid[idx_xy(cell.x,cell.y)]=snake_v
 		cell=cell.n
 		d=last_dir
 	end
@@ -197,31 +199,35 @@ function _update()
 end
 
 function _draw()
-	cls()
-	for i=0,cols do
-		for j=0,cols do
-			local c=3
+	cls(3)
+	for i=0,cols-1 do
+		for j=0,cols-1 do
 			local v=grid[idx_xy(i,j)]
 			if v==snake_v then
---				printh("snake")
-				c=1
+				local c=1
+				if i==head.x and j==head.y then
+					c=11
+				end
+				rectfill(
+					i*size,
+					j*size,
+					i*size+size-1,
+					j*size+size-1,
+					c)
 			elseif v==pill_v then
---				printh("pill")
-				c=8
+				rectfill(
+					i*size,
+					j*size,
+					i*size+size-1,
+					j*size+size-1,
+					8)
 			end
-			
-			rectfill(
-				i*size,
-				j*size,
-				j*size+size-1,
-				j*size+size-1,
-				c)
 		end
 	end
 	
-	print("score: "..score)
+	print(score,7)
 	if is_gameover then
-		print("game over")
+		print("game over",7)
 	end
 end
 __gfx__
