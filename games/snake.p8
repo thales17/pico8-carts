@@ -8,7 +8,7 @@ function _init()
 	size=4
 	cols =128/size
 	snake_v=1
-	pill_v=2
+	apple_v=2
 	dir_n=1
 	dir_s=2
 	dir_e=3
@@ -21,7 +21,7 @@ function _init()
 	head=snake_cell()
 	is_gameover=false
 	next_dir=0
-	pill_idx=0
+	apple_idx=0
 	for i=1,(cols*cols) do
 		add(grid,0)
 	end
@@ -60,7 +60,7 @@ function setup()
 		cell=cell.n
 	end
 	
-	new_pill()
+	new_apple()
 	
 	is_gameover=false
 	ticks=0
@@ -90,7 +90,7 @@ function grow_snake()
 	grow.y=xy.y
 end
 
-function new_pill()
+function new_apple()
 	local check_grid={}
 	local ncheck=0
 	for i=1,(cols*cols) do
@@ -99,9 +99,9 @@ function new_pill()
 			ncheck += 1
 		end
 	end
-	local idx=flr(rnd(ncheck))
-	pill_idx=check_grid[idx]
-	grid[pill_idx] = pill_v	
+	local idx=flr(rnd(ncheck-1))+1
+	apple_idx=check_grid[idx]
+	grid[apple_idx] = apple_v	
 end
 
 function gameover()
@@ -191,8 +191,8 @@ function _update60()
 		d=last_dir
 	end
 	
-	if idx_xy(head.x,head.y) == pill_idx then
-		new_pill()
+	if idx_xy(head.x,head.y) == apple_idx then
+		new_apple()
 		grow_snake()
 		sfx(0)
 		score += 1
@@ -216,7 +216,7 @@ function _draw()
 					i*size+size-1,
 					j*size+size-1,
 					c)
-			elseif v==pill_v then
+			elseif v==apple_v then
 				rectfill(
 					i*size,
 					j*size,
