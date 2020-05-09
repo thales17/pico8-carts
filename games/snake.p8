@@ -1,5 +1,5 @@
 pico-8 cartridge // http://www.pico-8.com
-version 23
+version 27
 __lua__
 -- SNAKE
 -- BY ADAM RICHARDSON
@@ -111,25 +111,25 @@ end
 
 function handle_input(d)
 	local new_dir=d
-	if btnp(⬅️) then
+	if btn(⬅️) then
 		if d!=dir_e and d!=dir_w then
 			new_dir=dir_w
 		end
 	end
 	
-	if btnp(➡️) then
+	if btn(➡️) then
 		if d!=dir_e and d!=dir_w then
 			new_dir=dir_e
 		end
 	end
 	
-	if btnp(⬆️) then
+	if btn(⬆️) then
 		if d!=dir_n and d!=dir_s then
 			new_dir=dir_n
 		end
 	end
 	
-	if btnp(⬇️) then
+	if btn(⬇️) then
 		if d!=dir_n and d!=dir_s then
 			new_dir=dir_s
 		end
@@ -230,7 +230,7 @@ function _draw()
 	print(score,7)
 	if is_gameover then
 		print("game over",7)
-		print("press ❎ to resart",7)
+		print("press ❎ to restart",7)
 	end
 end
 __gfx__
