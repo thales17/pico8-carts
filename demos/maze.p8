@@ -6,7 +6,7 @@ __lua__
 -- INSIRED BY ONE LONE CODE: PROGRAMMING MAZES
 -- https://www.youtube.com/watch?v=y37-gb83hke
 
-size=8
+size=4
 cols=128/size
 rows=128/size
 
@@ -41,12 +41,11 @@ function _init()
 end
 
 function idx_xy(x,y)
-	return y*cols+x+1
+	return y*cols+x
 end
 
 function next_point(x,y)
 	local r=flr(rnd(4))
-	printh(r)
 	local xy={
 		x=x,
 		y=y,
@@ -74,28 +73,24 @@ end
 function has_not_visited_neighbors()
 	if top.y>0 then
 		if grid[idx_xy(top.x,top.y-1)]==not_visited then
-			printh("north unvisited")
---			return true
+			return true
 		end
 	end
 	
 	if top.y<(rows-1) then
 		if grid[idx_xy(top.x,top.y+1)]==not_visited then
---			printh("south unvisited")
 			return true
 		end
 	end
 	
 	if top.x>0 then
 		if grid[idx_xy(top.x-1,top.y)]==not_visited then
---			printh("west unvisited")
 			return true
 		end
 	end
 	
 	if top.x<(cols-1) then
 		if grid[idx_xy(top.x+1,top.y)]==not_visited then
---			printh("east unvisited")
 			return true
 		end
 	end
@@ -106,11 +101,9 @@ end
 function advance_point()
 	if has_not_visited_neighbors() then
 		local xy=next_point(top.x,top.y)
---		printh(xy.x..","..xy.y)
 		local idx=idx_xy(xy.x,xy.y)
 		while grid[idx] != not_visited do
 			xy=next_point(top.x,top.y)
---			printh(xy.x..","..xy.y)
 			idx=idx_xy(xy.x,xy.y)
 		end
 		
@@ -141,11 +134,14 @@ function advance_point()
 end
 
 function _update60()
-	if visited_count < (cols*rows) then
+	if visited_count <= (cols*rows) then
 		advance_point()
+	else
+		done=true
 	end
-	
-	--add restart
+	if btnp(❎) then
+		_init()
+	end	
 end
 
 function _draw()
@@ -163,39 +159,55 @@ function _draw()
 			local c=12
 			if grid[idx]==east_path then
 				c=7
+				wall.x=r.x-2
+				wall.y=r.y
+				wall.w=2
+				wall.h=r.h
 			end
 			if grid[idx]==west_path then
 				c=7
+				wall.x=r.x+r.w
+				wall.y=r.y
+				wall.w=2
+				wall.h=r.h
 			end
 			if grid[idx]==south_path then
 				c=7
+				wall.x=r.x
+				wall.y=r.y-2
+				wall.w=r.w
+				wall.h=2
 			end
 			if grid[idx]==north_path then
 				c=7
+				wall.x=r.x
+				wall.y=r.y+r.h
+				wall.w=r.w
+				wall.h=2
 			end
 			
 			if idx==0 then
 				c=6
 			end
 			
-			if idx==(cols*rows) then
+			if idx==(cols*rows)-1 then
 				c=11
 			end
 			
 			if idx!=0 then
 				rectfill(
-					wall.x,
-					wall.y,
-					wall.x+wall.w,
-					wall.y+wall.h,
+					1+wall.x,
+					1+wall.y,
+					1+wall.x+wall.w,
+					1+wall.y+wall.h,
 					7)
 			end
 			
 			rectfill(
-				r.x,
-				r.y,
-				r.x+r.w,
-				r.y+r.h,
+				1+r.x,
+				1+r.y,
+				1+r.x+r.w,
+				1+r.y+r.h,
 				c)
 		end
 	end
