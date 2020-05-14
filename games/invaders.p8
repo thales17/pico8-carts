@@ -10,36 +10,18 @@ ufo={x=-20,y=10,w=16,h=8}
 enemy_ticks=40
 ticks=0
 enemy_state=false
+enemies={}
 pb={
 	x=0,
 	y=120,
 	w=1,
 	h=4,
-	speed=3,
+	speed=2,
 	active=false}
-	
-function _init()
-	cls()
-	-- ufo
-	spr(32,ufo.x,ufo.y,2,1)
-	
-	-- enemies
-	for i=0,6 do
-		spr(4,i*16,20)
-		spr(0,i*16,30,2,1)
-		spr(0,i*16,40,2,1)
-		spr(6,i*16,50,2,1)
-		spr(6,i*16,60,2,1)
-	end
-	-- player
-	spr(10,player.x,player.y,2,1)
-	
-	-- sheilds
-	for i=0,3 do
-		spr(34,8+i*32,100,2,2)
-	end
-end
 
+
+
+-->8
 function update_enemies()
 	enemy_state=not enemy_state
 	local a_spr=4
@@ -50,6 +32,7 @@ function update_enemies()
 		b_spr=2
 		c_spr=8	 
 	end
+	-- this will need to loop through all the enemies
 	for i=0,6 do
 		rectfill(i*16,20,(i+1)*16,28,0)
 		rectfill(i*16,30,(i+1)*16,38,0)
@@ -63,6 +46,84 @@ function update_enemies()
 		spr(c_spr,i*16,60,2,1)
 	end
 end
+
+function box_collide(r1,r2)
+	return (r1.x < r2.x+r2.w) and
+		(r1.x+r1.w > r2.x) and
+		(r1.y < r2.y+r2.h) and
+		(r1.y+r1.h > r2.y)
+end
+
+function kill_enemies()
+	-- find any enemies that the bullet
+	for e in all(enemies) do
+		if box_collide(e,pb) then
+			rectfill(
+				e.x,
+				e.y,
+				e.x+e.w,
+				e.y+e.h,0)
+			del(enemies,e)
+			return true
+		end
+	end
+	
+	return false
+end
+-->8
+function _init()
+	cls()
+	-- ufo
+	spr(32,ufo.x,ufo.y,2,1)
+	
+	-- enemies
+	for i=0,6 do
+		local x=i*16
+		spr(4,x,20)
+		add(enemies,{
+			x=x,
+			y=20,
+			w=8,
+			h=8,
+		})
+		spr(0,x,30,2,1)
+		add(enemies,{
+			x=x,
+			y=30,
+			w=11,
+			h=8,
+		})
+		spr(0,x,40,2,1)
+		add(enemies,{
+			x=x,
+			y=40,
+			w=11,
+			h=8,
+		})
+		spr(6,x,50,2,1)
+		add(enemies,{
+			x=x,
+			y=50,
+			w=12,
+			h=8,
+		})
+		spr(6,x,60,2,1)
+		add(enemies,{
+			x=x,
+			y=60,
+			w=12,
+			h=8,
+		})
+	end
+	-- player
+	spr(10,player.x,player.y,2,1)
+	
+	-- sheilds
+	for i=0,3 do
+		spr(34,8+i*32,100,2,2)
+	end
+end
+
 
 function _update60()
 	ticks+=1
@@ -110,20 +171,29 @@ function _update60()
 			pb.y,
 			pb.x,
 			pb.y+pb.h,0)
-		pb.y-=pb.speed
+		pb.y-=pb.speed	
 		rectfill(
 			pb.x,
 			pb.y,
 			pb.x,
 			pb.y+pb.h,11)
-		if pb.y==10 then
+		if pb.y<=10 then
 			rectfill(
 				pb.x,
 				pb.y,
 				pb.x,
 				pb.y+pb.h,0)
-				pb.active=false
-			
+			pb.active=false
+		end
+		
+		if pget(pb.x,pb.y-2)!=0 then
+			rectfill(
+				pb.x,
+				pb.y,
+				pb.x,
+				pb.y+pb.h,0)
+			pb.active=false
+			kill_enemies()
 		end
 	end
 	
@@ -144,7 +214,6 @@ function _draw()
 	-- stats
 	print(stat(1),0,2,7)
 end
-
 __gfx__
 0070000070000000007000007000000000077000000770000000777700000000000077770000000000000b000000000000000000000000000000000000000000
 000700070000000070070007007000000077770000777700077777777770000007777777777000000000bbb00000000000000000000000000000000000000000
