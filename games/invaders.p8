@@ -9,7 +9,6 @@ lives=0
 ufo={x=-20,y=10,w=16,h=8}
 enemy_ticks=40
 ticks=0
-enemy_state=false
 enemies={}
 pb={
 	x=0,
@@ -22,28 +21,27 @@ pb={
 
 
 -->8
+function clear_rect(r)
+	rectfill(
+		r.x,
+		r.y,
+		r.x+r.w,
+		r.y+r.h,0)
+end
+
 function update_enemies()
-	enemy_state=not enemy_state
-	local a_spr=4
-	local b_spr=0
-	local c_spr=6
-	if enemy_state then
-		a_spr=5
-		b_spr=2
-		c_spr=8	 
-	end
-	-- this will need to loop through all the enemies
-	for i=0,6 do
-		rectfill(i*16,20,(i+1)*16,28,0)
-		rectfill(i*16,30,(i+1)*16,38,0)
-		rectfill(i*16,40,(i+1)*16,48,0)
-		rectfill(i*16,50,(i+1)*16,58,0)
-		rectfill(i*16,60,(i+1)*16,68,0)
-		spr(a_spr,i*16,20)
-		spr(b_spr,i*16,30,2,1)
-		spr(b_spr,i*16,40,2,1)
-		spr(c_spr,i*16,50,2,1)
-		spr(c_spr,i*16,60,2,1)
+	local next_spr={
+		e=5,
+		f=4,
+		a=2,
+		c=0,
+		g=8,
+		i=6
+	}
+	for e in all(enemies) do
+		clear_rect(e)
+		e.s=next_spr[chr(ord("a")+e.s)]
+		spr(e.s,e.x,e.y,e.sw,e.sh)
 	end
 end
 
@@ -55,20 +53,22 @@ function box_collide(r1,r2)
 end
 
 function kill_enemies()
-	-- find any enemies that the bullet
 	for e in all(enemies) do
 		if box_collide(e,pb) then
-			rectfill(
-				e.x,
-				e.y,
-				e.x+e.w,
-				e.y+e.h,0)
+			clear_rect(e)
 			del(enemies,e)
 			return true
 		end
 	end
 	
 	return false
+end
+
+function kill_ufo()
+	if box_collide(pb,ufo) then
+		clear_rect(ufo)
+		ufo.x=-20
+	end
 end
 -->8
 function _init()
@@ -85,6 +85,9 @@ function _init()
 			y=20,
 			w=8,
 			h=8,
+			s=4,
+			sw=1,
+			sh=1
 		})
 		spr(0,x,30,2,1)
 		add(enemies,{
@@ -92,6 +95,9 @@ function _init()
 			y=30,
 			w=11,
 			h=8,
+			s=0,
+			sw=2,
+			sh=1
 		})
 		spr(0,x,40,2,1)
 		add(enemies,{
@@ -99,6 +105,9 @@ function _init()
 			y=40,
 			w=11,
 			h=8,
+			s=0,
+			sw=2,
+			sh=1
 		})
 		spr(6,x,50,2,1)
 		add(enemies,{
@@ -106,6 +115,9 @@ function _init()
 			y=50,
 			w=12,
 			h=8,
+			s=6,
+			sw=2,
+			sh=1
 		})
 		spr(6,x,60,2,1)
 		add(enemies,{
@@ -113,6 +125,9 @@ function _init()
 			y=60,
 			w=12,
 			h=8,
+			s=6,
+			sw=2,
+			sh=1
 		})
 	end
 	-- player
@@ -133,32 +148,20 @@ function _update60()
 	end
 	
 	if btn(0) then
-		rectfill(
-			player.x,
-			player.y,
-			player.x+player.w,
-			player.y+player.h,0)
+		clear_rect(player)
 		player.x-=1
 		player.x=max(0,player.x)
 		spr(10,player.x,player.y,2,1)
 	end
 	
 	if btn(1) then
-		rectfill(
-			player.x,
-			player.y,
-			player.x+player.w,
-			player.y+player.h,0)
+		clear_rect(player)
 		player.x+=1
 		player.x=min(128-player.w,player.x)
 		spr(10,player.x,player.y,2,1)
 	end
 	
-	rectfill(
-		ufo.x,
-		ufo.y,
-		ufo.x+ufo.w,
-		ufo.y+ufo.h,0)
+	clear_rect(ufo)
 	ufo.x+=1
 	spr(32,ufo.x,ufo.y,2,1)
 	if ufo.x>128 then
@@ -166,11 +169,7 @@ function _update60()
 	end
 	
 	if pb.active then
-		rectfill(
-			pb.x,
-			pb.y,
-			pb.x,
-			pb.y+pb.h,0)
+		clear_rect(pb)
 		pb.y-=pb.speed	
 		rectfill(
 			pb.x,
@@ -178,22 +177,16 @@ function _update60()
 			pb.x,
 			pb.y+pb.h,11)
 		if pb.y<=10 then
-			rectfill(
-				pb.x,
-				pb.y,
-				pb.x,
-				pb.y+pb.h,0)
+			clear_rect(pb)
 			pb.active=false
 		end
 		
-		if pget(pb.x,pb.y-2)!=0 then
-			rectfill(
-				pb.x,
-				pb.y,
-				pb.x,
-				pb.y+pb.h,0)
+		if pget(pb.x,pb.y-1)!=0 then
+			clear_rect(pb)
 			pb.active=false
-			kill_enemies()
+			if not kill_enemies() then
+				kill_ufo()
+			end
 		end
 	end
 	
@@ -211,7 +204,6 @@ function _draw()
 	spr(10,104,0,2,1)
 	print("="..lives,116,2,7)
 		
-	-- stats
 	print(stat(1),0,2,7)
 end
 __gfx__
