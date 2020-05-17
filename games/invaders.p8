@@ -20,9 +20,35 @@ pb={
 animations={}
 erow=4
 edirs={1,1,1,1,1}
-
-
-
+edrops={0,0,0,0,0}
+drop=2
+dcount=0
+shields={
+	{
+		x=8,
+		y=100,
+		w=16,
+		h=16,
+	},
+	{
+		x=40,
+		y=100,
+		w=16,
+		h=16,
+	},
+	{
+		x=72,
+		y=100,
+		w=16,
+		h=16,
+	},
+	{
+		x=104,
+		y=100,
+		w=16,
+		h=16,
+	},
+}
 -->8
 function clear_rect(r)
 	local w=r.w
@@ -56,21 +82,23 @@ function update_enemies()
 			spr(e.s,e.x,e.y,e.sw,e.sh)
 			if e.x+e.w>127 or e.x<1 then 
 				end_reached=true
-				edidx=e.didx 
+				edidx=e.didx
+				edrops[edidx]+=1
 			end
 		end
 	end
 	
 	if end_reached then
-		local v=edirs[edidx]
-		edirs[edidx]=-1*v
-		for e in all(enemies) do
-			if e.row==erow then
-				clear_rect(e)
-				e.y+=1
-				spr(e.s,e.x,e.y,e.sw,e.sh)
+		if edrops[edidx]>dcount then
+			dcount+=1
+			for e in all(enemies) do
+					clear_rect(e)
+					e.y+=drop
+					spr(e.s,e.x,e.y,e.sw,e.sh)
 			end
 		end
+		local v=edirs[edidx]
+		edirs[edidx]=-1*v
 	end
 	
 	erow-=1
@@ -150,6 +178,18 @@ function kill_ufo()
 		return true
 	end
 	
+	return false
+end
+
+function shield()
+	for s in all(shields) do
+		if box_collide(pb,s) then
+			if pget(pb.x,pb.y-1)==11 then
+				pset(pb.x,pb.y-1,0)
+				return true
+			end			
+		end
+	end
 	return false
 end
 
@@ -266,14 +306,13 @@ function _update60()
 			if kill_ufo() then
 				clear_rect(pb)
 				pb.active=false
+				else
+					if shield() then
+						clear_rect(pb)
+						pb.active=false
+					end
 			end
 		end
---		if pget(pb.x,pb.y-1)!=0 then
-
---			if not kill_enemies() then
---				kill_ufo()
---			end
---		end
 	end
 	
 	if btnp(5) and not pb.active then
