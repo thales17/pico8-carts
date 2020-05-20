@@ -5,9 +5,9 @@ __lua__
 -- BY ADAM RICHARDSON
 player={x=0,y=120,w=11,h=8}
 score=0
-lives=0
+lives=2
 ufo={x=-20,y=10,w=16,h=8}
-enemy_ticks=1
+enemy_ticks=10
 ticks=0
 enemies={}
 pb={
@@ -57,6 +57,7 @@ eb={
 	speed=2,
 	active=false
 }
+gameover=false
 -->8
 function clear_rect(r)
 	local w=r.w
@@ -69,17 +70,36 @@ function clear_rect(r)
 		r.y+r.h,0)
 end
 
+function clear_to_shoot(idx)
+	local a=enemies[idx]
+	for i=idx+1,#enemies do
+		local b={
+			x=enemies[i].x,
+			y=a.y,
+			w=enemies[i].w,
+			h=enemies[i].h
+		}
+		
+		if box_collide(a,b) then
+			return false
+		end
+	end
+	
+	return true
+end
+
 function enemy_shoot()
 	if eb.active then
 		return
 	end
-	-- build a set of the bottom most enemies
-	-- randomly pick one
-	-- set the eb.x,y to this location
-	-- set eb.active
-	eb.active=true
-	eb.x=50
-	eb.y=50
+		
+	local idx=flr(rnd(min(6,#enemies)))
+	local e=enemies[#enemies-idx]
+	if clear_to_shoot(#enemies-idx) then
+		eb.active=true
+		eb.x=e.x+5
+		eb.y=e.y+8
+	end
 end
 
 function update_enemies()
@@ -236,6 +256,8 @@ function kill_player()
 		eb.active then
 		clear_rect(player)
 		explosion(player.x,player.y)
+		lives-=1
+		gameover=lives<0
 		return true
 	end
 	return false
@@ -307,6 +329,9 @@ end
 
 
 function _update60()
+	if gameover then
+		return
+	end
 	ticks+=1
 	if ticks>=enemy_ticks then
 		ticks=0
@@ -405,6 +430,10 @@ function _draw()
 	print("="..lives,116,2,7)
 		
 	print(stat(1),0,2,7)
+	
+	if gameover then
+		print("game over",50,50,8)
+	end
 end
 __gfx__
 0070000070000000007000007000000000077000000770000000777700000000000077770000000000000b000000000000000000000000000000000000000000
