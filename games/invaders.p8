@@ -3,12 +3,16 @@ version 27
 __lua__
 -- INVADERS
 -- BY ADAM RICHARDSON
-player={x=0,y=120,w=11,h=8}
+player={
+	x=0,
+	y=120,
+	w=11,
+	h=8}
 score=0
 lives=2
 ufo={x=-20,y=10,w=16,h=8}
 enemy_ticks=10
-ticks=0
+eticks=0
 enemies={}
 pb={
 	x=0,
@@ -18,7 +22,7 @@ pb={
 	speed=2,
 	active=false}
 animations={}
-erow=4
+erow=3
 edirs={1,1,1,1,1}
 edrops={0,0,0,0,0}
 drop=2
@@ -58,6 +62,16 @@ eb={
 	active=false
 }
 gameover=false
+round=1
+round_ticks=100
+rticks=0
+playing=false
+dying=false
+die_ticks=40
+dticks=0
+ufo_ticks=500
+uticks=0
+esfx=0
 -->8
 function clear_rect(r)
 	local w=r.w
@@ -143,10 +157,16 @@ function update_enemies()
 	end
 	
 	erow-=1
-	if erow<0 then erow=4 end
+	if erow<0 then erow=3 end
 	
-	if erow==4 then
+	if erow==3 then
 		enemy_shoot()
+		sfx(esfx)
+		if esfx==0 then
+			esfx=1
+		else
+			esfx=0
+		end
 	end
 end
 
@@ -209,6 +229,11 @@ function kill_enemies()
 			clear_rect(e)
 			del(enemies,e)
 			explosion(e.x,e.y)
+			if #enemies%3==0 then
+				enemy_ticks-=2
+			end
+			score+=e.score
+			sfx(3)
 			return true
 		end
 	end
@@ -221,6 +246,8 @@ function kill_ufo()
 		clear_rect(ufo)
 		explosion(ufo.x,ufo.y)
 		ufo.x=-20
+		score+=100
+		sfx(5)
 		return true
 	end
 	
@@ -258,13 +285,35 @@ function kill_player()
 		explosion(player.x,player.y)
 		lives-=1
 		gameover=lives<0
+		if gameover then
+			lives=0
+		end
+		dying=true
+		dticks=0
+		clear_rect(pb)
+		pb.active=false
+		sfx(4)
 		return true
 	end
 	return false
 end
 
--->8
-function _init()
+function round_start()
+	cls()
+	print("round "..round,51,60,7)
+	rticks=0
+	playing=false
+end
+
+function round_play()
+	edirs={1,1,1,1,1}
+	edrops={0,0,0,0,0}
+	dcount=0
+	animations={}
+	ufo={x=-20,y=10,w=16,h=8}
+	eticks=0
+	player={x=0,y=120,w=11,h=8}
+	enemy_ticks=10
 	cls()
 	-- ufo
 	spr(32,ufo.x,ufo.y,2,1)
@@ -282,7 +331,8 @@ function _init()
 			sw=1,
 			sh=1,
 			didx=1,
-			row=0
+			row=0,
+			score=30
 		})
 	end
 	
@@ -298,7 +348,8 @@ function _init()
 			sw=2,
 			sh=1,
 			didx=2,
-			row=1
+			row=1,
+			score=20
 		})
 	end
 	
@@ -314,7 +365,8 @@ function _init()
 			sw=2,
 			sh=1,
 			didx=4,
-			row=3
+			row=3,
+			score=10
 		})
 	end
 	
@@ -326,15 +378,43 @@ function _init()
 		spr(34,8+i*32,100,2,2)
 	end
 end
+-->8
+function _init()
+	round_start()
+end
 
 
 function _update60()
 	if gameover then
+		animate()
 		return
 	end
-	ticks+=1
-	if ticks>=enemy_ticks then
-		ticks=0
+	
+	if not playing and 
+		rticks<round_ticks then
+		rticks+=1
+		if rticks==round_ticks then
+			playing=true
+			round_play()
+		end
+		return
+	end
+	
+	if dying 
+		and dticks<die_ticks then
+		dticks+=1
+		if dticks==die_ticks then
+			dying=false
+			player.x=0
+			spr(10,player.x,player.y,2,1)
+		end
+		animate()
+		return
+	end
+	
+	eticks+=1
+	if eticks>=enemy_ticks then
+		eticks=0
 		update_enemies()
 	end
 	
@@ -352,11 +432,17 @@ function _update60()
 		spr(10,player.x,player.y,2,1)
 	end
 	
-	clear_rect(ufo)
-	ufo.x+=1
-	spr(32,ufo.x,ufo.y,2,1)
-	if ufo.x>128 then
-		ufo.x=-20
+	
+	if uticks==ufo_ticks then
+		clear_rect(ufo)
+		ufo.x+=1
+		spr(32,ufo.x,ufo.y,2,1)
+		if ufo.x>128 then
+			ufo.x=-20
+			uticks=0
+		end
+	else
+		uticks+=1
 	end
 	
 	if pb.active then
@@ -392,6 +478,7 @@ function _update60()
 		pb.active=true
 		pb.y=115
 		pb.x=player.x+5
+		sfx(2)
 	end
 	
 	if eb.active then
@@ -420,6 +507,10 @@ function _update60()
 	end
 	
 	animate()
+	if #enemies==0 then
+		round+=1
+		round_start()
+	end
 end
 
 function _draw()
@@ -429,7 +520,7 @@ function _draw()
 	spr(10,104,0,2,1)
 	print("="..lives,116,2,7)
 		
-	print(stat(1),0,2,7)
+--	print(stat(1),0,2,7)
 	
 	if gameover then
 		print("game over",50,50,8)
@@ -468,5 +559,9 @@ __gfx__
 __map__
 0000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __sfx__
-000100001f050260502b050000000000000000000000000000000000001e000230002d0002b000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-000100002a65028650266502465024650206500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0002000001320063201c7000c7000c70000000000000000000000000001e000230002d0002b000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000200000632001320040002460024600206000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000400002b330013000f3000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00030000203301c330143300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0007000021650126500a6500265003650000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000600001135016350223500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
