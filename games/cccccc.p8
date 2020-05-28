@@ -24,6 +24,8 @@ level=0
 start_grav=2
 gravity=2
 bg_c=3
+map_bricks={}
+-->8
 
 function anim()
 	if(player.anim_t+player.anim_time<t()) then
@@ -40,32 +42,33 @@ function anim()
 	end
 end
 
-function mapxy_l(x,y)
-	return {
-		x=flr(x/8)+level*16,
-		y=flr(y/8)
-	}
-end
-
-function mapxy_h(x,y)
-	return {
-		x=ceil(x/8)+level*16,
-		y=ceil(y/8)
-	}
+function box_collide(r1,r2)
+	return r1.x<(r2.x+r2.w) and
+		(r1.x+r1.w)>r2.x and
+		r1.y<(r2.y+r2.h) and
+		(r1.y+r1.h)>r2.y
 end
 
 function physics()
 	local x=player.x
-	local y=player.y+8
+	local y=(player.y+gravity)
 	
-	if gravity<0 then
-		y=player.y-1
+	if gravity>0 then
+		y+=(8-gravity)
+	end
+	local clear=true
+	for i=0,1 do
+		for j=0,1 do
+			local x=player.x+(i*player.w)
+			local y=player.y+(j*player.h)
+			if mget(x,y)==grnd_s then
+				clear=false
+				break
+			end
+		end
 	end
 	
-	local xy_l=mapxy_l(x,y)
-	local xy_h=mapxy_h(x,y)
-	if mget(xy_l.x,xy_l.y)!=grnd_s
-		and mget(xy_h.x,xy_h.y)!=grnd_s then
+	if clear then
 		player.flipping=true
 		move_player(
 			player.x,
@@ -82,8 +85,8 @@ function physics()
 end
 
 function check_exit()
-	local xy=mapxy_l(player.x,player.y)
-	return mget(xy.x,xy.y)==exit_s	
+--	local xy=mapxy_l(player.x,player.y)
+--	return mget(xy.x,xy.y)==exit_s	
 end
 
 function level_start()
@@ -92,6 +95,19 @@ function level_start()
 	player.anim_t=0
 	cls(bg_c)
 	map(level*16,0,0,0)
+	map_bricks={}
+	for i=0,15 do
+		for j=0,15 do
+			if mget(i,j)==grnd_s then
+				add(map_bricks,{
+					x=i*8,
+					y=j*8,
+					w=8,
+					h=8
+				})
+			end
+		end
+	end
 end
 
 function clear_rect(r)
@@ -124,8 +140,7 @@ function move_player(x,y)
 end
 
 function check_player_move(x,y)
-	local xy=mapxy_l(x,y)
-	return mget(xy.x,xy.y)!=grnd_s
+	return mget(x/8,y/8)!=grnd_s
 end
 -->8
 function _init()
