@@ -23,8 +23,8 @@ exit_s=16
 level=0
 start_grav=2
 gravity=2
-bg_c=3
-map_bricks={}
+bg_c=0
+bricks={}
 -->8
 
 function anim()
@@ -42,7 +42,7 @@ function anim()
 	end
 end
 
-function box_collide(r1,r2)
+function collide(r1,r2)
 	return r1.x<(r2.x+r2.w) and
 		(r1.x+r1.w)>r2.x and
 		r1.y<(r2.y+r2.h) and
@@ -50,25 +50,39 @@ function box_collide(r1,r2)
 end
 
 function physics()
-	local x=player.x
-	local y=(player.y+gravity)
+	local r={
+		x=player.x,
+--		y=(player.y+gravity),
+		y=player.y,
+		w=player.w,
+		h=player.h
+	}
 	
-	if gravity>0 then
-		y+=(8-gravity)
-	end
-	local clear=true
-	for i=0,1 do
-		for j=0,1 do
-			local x=player.x+(i*player.w)
-			local y=player.y+(j*player.h)
-			if mget(x,y)==grnd_s then
-				clear=false
-				break
-			end
+--	if gravity>0 then
+--		r.y+=(8-gravity)
+--	end
+	
+	clear=true
+	for b in all(bricks) do
+		if collide(r,b) then
+			clear=false
+			break
 		end
 	end
 	
-	if clear then
+--	local clear=true
+--	for i=0,1 do
+--		for j=0,1 do
+--			local x=player.x+(i*player.w)
+--			local y=player.y+(j*player.h)
+--			if mget(x,y)==grnd_s then
+--				clear=false
+--				break
+--			end
+--		end
+--	end
+--	
+	if clear and flipping then
 		player.flipping=true
 		move_player(
 			player.x,
@@ -81,6 +95,33 @@ function physics()
 		end
 	else
 		player.flipping=false
+		local d=1
+		if gravity<0 then d=-1 end
+		clear=true
+		while clear do
+			local r={
+				x=player.x,
+				y=player.y,
+				w=player.w,
+				h=player.y
+			}
+			for b in all(bricks) do
+				if collide(r,b) then
+					clear=false
+					break
+				end
+			end
+			
+			if clear then
+				move_player(
+					player.x,
+					player.y+d)
+			else
+				move_player(
+					player.x,
+					player.y-d)
+			end
+		end
 	end
 end
 
@@ -95,11 +136,11 @@ function level_start()
 	player.anim_t=0
 	cls(bg_c)
 	map(level*16,0,0,0)
-	map_bricks={}
+	bricks={}
 	for i=0,15 do
 		for j=0,15 do
 			if mget(i,j)==grnd_s then
-				add(map_bricks,{
+				add(bricks,{
 					x=i*8,
 					y=j*8,
 					w=8,
@@ -169,6 +210,7 @@ function _update60()
 	
 	if btnp(❎) and not player.flipping then
 		gravity*=-1
+		flipping=true
 	end
 	physics()
 	if check_exit() then
