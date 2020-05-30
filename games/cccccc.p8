@@ -30,7 +30,10 @@ bg_c=0
 blocks={}
 exit={}
 speed=1
+bg_ticks=2
+bg_t=0
 -->8
+-- game functions
 function move_player(x,y)
 	clear_rect({
 		x=player.x,
@@ -186,6 +189,40 @@ function move_lr(s)
 	move_player(r.x,r.y)
 end
 -->8
+-- starfield
+star_cnt=15
+function star_bg()
+	if stars==nil then
+		printh("star init")
+		stars={}
+		for i=1,star_cnt do
+			local s=flr(rnd(4))+1
+			add(stars,{
+				x=128+flr(rnd(128-s)),
+				y=flr(rnd(128-s))+s,
+				w=s,
+				h=s})
+		end
+	end
+	cls(bg_c)
+	for s in all(stars) do
+		local spd=(s.w/2)
+		s.x-=spd
+		if s.x<0 then
+			s.x=128+flr(rnd(128-s.w))
+			s.y=flr(rnd(128-s.h))
+		end
+		rectfill(
+			s.x,
+			s.y,
+			s.x+s.w,
+			s.y+s.h,7)
+	end
+end
+-->8
+-- fire
+-->8
+-- p8 functions
 function _init()
 	level_start()
 end
@@ -219,9 +256,13 @@ function _update60()
 end
 
 function _draw()
---	cls(3)
---	map(level*16,0,0,0)
-
+	bg_t+=1
+	if bg_t==bg_ticks then
+		bg_t=0
+		star_bg()
+		move_player(player.x,player.y)
+		map(level*16,0,0,0)
+	end
 end
 __gfx__
 00077000000770000007700004445440000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
