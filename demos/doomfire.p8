@@ -1,13 +1,13 @@
 pico-8 cartridge // http://www.pico-8.com
-version 22
+version 27
 __lua__
 -- DOOMFIRE
 -- by Adam Richardson
 
 function _init()
 	fw = 128
-	fh = 32
-	psize = 4
+	fh = 48
+	psize = 5
 	pixels = {}
 	for x=0,fw do
 		for y=0,fh do
@@ -16,7 +16,7 @@ function _init()
 	end
 	
 	for x=0,fw-1 do
-		pixels[idx_xy(x,fh-1)]=psize-1
+		pixels[idx_xy(x,fh-1)]=psize
 	end
 	
 	colors = {
@@ -24,7 +24,10 @@ function _init()
 		8,
 		9,
 		10,
+		7,
 	}
+	
+	print("doom fire", 44, 40)
 end
 
 function idx_xy(x,y)
@@ -51,7 +54,6 @@ function _update()
 end
 
 function _draw()
-	cls()
 	local offset=128-fh
 	for x=0,fw-1 do
 		for y=0,fh-1 do
@@ -59,7 +61,8 @@ function _draw()
 		end
 	end
 	
-	print("doom fire", 44, 40)
+	rectfill(0,0,128,10,0)
+	print(stat(1),0,2,7)
 end
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
